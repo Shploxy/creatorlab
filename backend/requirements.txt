@@ -6,7 +6,7 @@ pillow==11.0.0
 pypdf==5.1.0
 reportlab==4.2.5
 aiofiles==24.1.0
-numpy==2.2.1
+numpy>=2.3.0,<3.0.0
 rembg==2.0.73
 onnxruntime==1.24.3
 email-validator==2.2.0

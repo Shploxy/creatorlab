@@ -15,11 +15,7 @@ from app.core.config import settings
 from app.core.database import job_repository
 from app.core.exceptions import ValidationError
 from app.schemas.job import JobRecord, OutputFile
-from app.services.background_remover import process_background_remove
-from app.services.compressor import process_compress
-from app.services.pdf_tools import process_images_to_pdf, process_pdf_merge, process_pdf_split
 from app.services.types import JobContext, OutputArtifact
-from app.services.upscaler import process_upscale
 from app.core.storage import storage
 
 logger = logging.getLogger("creatorlab.jobs")
@@ -36,6 +32,34 @@ TOOL_PRIORITY_WEIGHTS = {
 
 def _download_url(file_id: str) -> str:
     return f"{settings.api_public_url.rstrip('/')}/downloads/{file_id}"
+
+
+def _load_processor(tool: str):
+    if tool == "upscale":
+        from app.services.upscaler import process_upscale
+
+        return process_upscale
+    if tool == "background-remove":
+        from app.services.background_remover import process_background_remove
+
+        return process_background_remove
+    if tool == "compress":
+        from app.services.compressor import process_compress
+
+        return process_compress
+    if tool == "pdf-merge":
+        from app.services.pdf_tools import process_pdf_merge
+
+        return process_pdf_merge
+    if tool == "pdf-split":
+        from app.services.pdf_tools import process_pdf_split
+
+        return process_pdf_split
+    if tool == "images-to-pdf":
+        from app.services.pdf_tools import process_images_to_pdf
+
+        return process_images_to_pdf
+    raise KeyError(f"Unsupported tool processor: {tool}")
 
 
 class JobManager:
@@ -55,14 +79,7 @@ class JobManager:
             "upscale": threading.BoundedSemaphore(value=max(1, settings.max_concurrent_ai_jobs)),
             "background-remove": threading.BoundedSemaphore(value=max(1, settings.max_concurrent_ai_jobs)),
         }
-        self._processors = {
-            "upscale": process_upscale,
-            "background-remove": process_background_remove,
-            "compress": process_compress,
-            "pdf-merge": process_pdf_merge,
-            "pdf-split": process_pdf_split,
-            "images-to-pdf": process_images_to_pdf,
-        }
+        self._processors: dict[str, object] = {}
 
     def start(self) -> None:
         if self._running:
@@ -220,7 +237,10 @@ class JobManager:
             )
             should_cleanup_inputs = True
             try:
-                processor = self._processors[context.tool]
+                processor = self._processors.get(context.tool)
+                if processor is None:
+                    processor = _load_processor(context.tool)
+                    self._processors[context.tool] = processor
                 semaphore = self._tool_semaphores.get(context.tool)
                 if semaphore:
                     with semaphore:

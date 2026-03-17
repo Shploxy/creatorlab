@@ -33,13 +33,12 @@ async def lifespan(_: FastAPI):
     job_repository.initialize()
     job_manager.start()
     logger.info(
-        "CreatorLab API started | env=%s | storage=%s | require_auth_for_jobs=%s | require_email_verification=%s | mail_backend=%s | runtime=%s",
+        "CreatorLab API started | env=%s | storage=%s | require_auth_for_jobs=%s | require_email_verification=%s | mail_backend=%s",
         settings.app_env,
         settings.storage_backend,
         settings.require_auth_for_jobs,
         settings.require_email_verification,
         settings.mail_backend,
-        get_runtime_info(),
     )
     yield
     job_manager.stop()

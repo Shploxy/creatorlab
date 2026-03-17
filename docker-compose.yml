@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      APP_NAME: CreatorLab API
+      APP_ENV: docker
+      CORS_ORIGINS: '["http://localhost:3000"]'
+      STORAGE_ROOT: /app/storage
+      DATABASE_PATH: /app/storage/creatorlab.db
+      MAX_UPLOAD_MB: 25
+      WORKER_THREADS: 2
+      WORKER_QUEUE_SIZE: 128
+      JOB_MAX_RETRIES: 2
+      UPLOAD_RATE_LIMIT_PER_MINUTE: 30
+      AUTH_SECRET_KEY: creatorlab-docker-dev-secret
+      REQUIRE_AUTH_FOR_JOBS: "false"
+    volumes:
+      - creatorlab_storage:/app/storage
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      API_URL_INTERNAL: http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  creatorlab_storage:

@@ -1,0 +1,51 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Git / logs
+*.log
+*.err
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+!**/.env.production.example
+
+# Node / Next.js
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+out/
+dist/
+
+# Python
+.venv/
+venv/
+backend/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+backend/.pytest_cache/
+.mypy_cache/
+
+# Local runtime artifacts
+backend/storage/
+frontend/dev.log
+frontend/dev.err.log
+backend/dev.log
+backend/dev.err.log
+
+# Test / coverage artifacts
+.coverage
+coverage/
+htmlcov/

@@ -1,0 +1,7 @@
+.next
+node_modules
+npm-debug.log
+dev.log
+.env.local
+.env.production
+.env.production.local

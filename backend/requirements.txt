@@ -2,7 +2,7 @@ fastapi==0.115.6
 uvicorn[standard]==0.34.0
 python-multipart==0.0.20
 pydantic-settings==2.7.0
-pillow==11.0.0
+pillow>=12.1.0,<13.0.0
 pypdf==5.1.0
 reportlab==4.2.5
 aiofiles==24.1.0
